@@ -111,3 +111,6 @@ $RECYCLE.BIN/
 test/data/
 data/
 tmp/
+
+*.sw*
+.env

@@ -1,15 +1,16 @@
 const { authenticate } = require('@feathersjs/authentication').hooks;
-
+const verifyHooks = require('feathers-authentication-management').hooks;
 const { hashPassword, protect } = require('@feathersjs/authentication-local').hooks;
-
-const gravatar = require('../../hooks/gravatar');
+const accountService = require('../authmanagement/notifier');
+// TODO restore gravatar, we get some error about undefined toLower
+//const gravatar = require('../../hooks/gravatar');
 
 module.exports = {
   before: {
     all: [],
-    find: [ authenticate('jwt') ],
+    find: [],// authenticate('jwt') ], relax for dev ease
     get: [ authenticate('jwt') ],
-    create: [ hashPassword(), gravatar() ],
+    create: [ hashPassword(), verifyHooks.addVerification(), ],//gravatar() ],
     update: [ hashPassword(), authenticate('jwt') ],
     patch: [ hashPassword(), authenticate('jwt') ],
     remove: [ authenticate('jwt') ]
@@ -23,7 +24,12 @@ module.exports = {
     ],
     find: [],
     get: [],
-    create: [],
+    create: [
+      context => {
+        accountService(context.app).notifier('resendVerifySignup', context.result)
+      },
+      verifyHooks.removeVerification()
+    ],
     update: [],
     patch: [],
     remove: []
